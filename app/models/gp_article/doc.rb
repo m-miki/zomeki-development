@@ -80,6 +80,7 @@ class GpArticle::Doc < ActiveRecord::Base
   before_save :set_published_at
   before_save :replace_public
   before_destroy :keep_edition_relation
+  after_destroy :close_page
 
   validates :title, :presence => true, :length => {maximum: 200}
   validates :mobile_title, :length => {maximum: 200}
@@ -496,6 +497,7 @@ class GpArticle::Doc < ActiveRecord::Base
   end
 
   def backlinks
+    return self.class.none unless state_public?
     links.engine.where(links.table[:url].matches("%#{self.public_uri(without_filename: true).sub(/\/$/, '')}%"))
   end
 
